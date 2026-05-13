@@ -137,7 +137,7 @@ function switchAuthTab(tab) {
 function handleUserLogin() {
   const pw = document.getElementById('user-password').value;
   if (pw === USER_PASSWORD) {
-    loginAs({ name: 'User', role: 'user', login: new Date().toLocaleString() });
+    loginAs({ name: 'Aki', role: 'user', login: new Date().toLocaleString() });
   } else {
     alert('Invalid password');
   }
@@ -147,7 +147,7 @@ function handleAdminLogin() {
   const pw = document.getElementById('admin-password').value;
   if (pw === ADMIN_PASSWORD) {
     loginAs({
-      name: 'Admin',
+      name: 'Aki',
       role: 'admin',
       login: new Date().toLocaleString(),
     });
