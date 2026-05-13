@@ -495,15 +495,21 @@ function confirmAssignee() {
   const value = input.value.trim();
   const display = document.getElementById('assignee-display');
   const suggestions = document.getElementById('assignee-suggestions');
-
-  if (!value) {
-    currentAssignee = '';
-    document.getElementById('assignee-text').textContent = 'Assign to...';
+if (!value) {
+  if (currentAssignee) {
     display.style.display = 'flex';
     input.style.display = 'none';
     suggestions.style.display = 'none';
     return;
   }
+
+  currentAssignee = '';
+  document.getElementById('assignee-text').textContent = 'Assign to...';
+  display.style.display = 'flex';
+  input.style.display = 'none';
+  suggestions.style.display = 'none';
+  return;
+}
 
   // FIX #2: case-insensitive match — use canonical name if it exists
   const canonical = getCanonicalAssignee(value);
