@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rivtara </title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ===== AUTH SCREEN ===== -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-title">Rivtara </div>
+      <div class="auth-subtitle">Production &amp; Travel Management</div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-user" onclick="switchAuthTab('user')">Team Member</button>
+      <button class="auth-tab" id="tab-admin" onclick="switchAuthTab('admin')">Admin</button>
+    </div>
+    <div id="form-user" class="auth-form">
+      <input type="password" id="user-password" class="auth-input" placeholder="Enter team password" />
+      <button class="auth-button" onclick="handleUserLogin()">Sign In</button>
+      <div class="auth-info">
+        💡 Team password: <code>frame2026</code>
+      </div>
+    </div>
+    <div id="form-admin" class="auth-form" style="display:none">
+      <input type="password" id="admin-password" class="auth-input" placeholder="Enter admin password" />
+      <button class="auth-button" onclick="handleAdminLogin()">Admin Access</button>
+      <div class="auth-info">
+        🔐 Admin password: <code>admin2026</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard" style="display:none">
+<div class="navbar">
+
+  <div class="navbar-title">Rivtara</div>
+
+  <div class="navbar-filters">
+
+    <button class="search-btn navbar-control" onclick="toggleSearchBar()">
+      🔍
+    </button>
+
+    <div class="search-box" id="search-box">
+      <input
+        type="text"
+        id="task-search"
+        placeholder="Search tasks..."
+        oninput="searchTasks(this.value)"
+      />
+    </div>
+
+    <select
+      class="filter-select navbar-control"
+      onchange="setPriorityFilter(this.value)">
+
+      <option value="all">Priority</option>
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+
+    </select>
+
+    <select
+      class="filter-select navbar-control"
+      id="navbar-assignee-filter"
+      onchange="setAssigneeFilter(this.value)">
+
+      <option value="all">Assigned</option>
+
+    </select>
+
+    <button class="search-btn navbar-control" onclick="toggleTheme()" title="Toggle Theme">
+      🌙
+    </button>
+
+  </div>
+
+  <div class="navbar-user">
+
+    <div class="user-badge" id="user-badge-label"></div>
+
+    <button class="navbar-btn" onclick="exportBoards()">
+      Export
+    </button>
+
+    <button class="navbar-btn" onclick="document.getElementById('import-file').click()">
+      Import
+    </button>
+
+    <button class="navbar-btn" onclick="handleLogout()">
+      Logout
+    </button>
+
+  </div>
+
+</div>
+  <div class="container">
+    <!-- Board Selector -->
+    <div class="board-selector" id="board-selector"></div>
+
+    <!-- Board Content -->
+    <div id="board-content"></div>
+  </div>
+</div>
+
+<!-- ===== NEW BOARD MODAL ===== -->
+<div class="modal-overlay" id="modal-new-board" style="display:none" onclick="closeBoardModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">Create New Board</div>
+    <div class="modal-form">
+      <div class="form-group">
+        <label class="form-label">Board Name</label>
+        <input type="text" id="new-board-name" class="form-input" placeholder="e.g., Ladakh Trip 2026"
+          onkeydown="if(event.key==='Enter') createBoard()" />
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-primary" onclick="createBoard()">Create</button>
+        <button class="btn-secondary" onclick="closeNewBoardModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TASK FORM MODAL ===== -->
+<div class="modal-overlay" id="modal-task-form" style="display:none" onclick="closeTaskModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header" id="task-modal-title">Add Task</div>
+    <div class="modal-form">
+      <input type="text" id="task-title-input" class="form-input" placeholder="Task title" />
+      <textarea id="task-desc-input" class="form-textarea" placeholder="Description (optional)"></textarea>
+      <div class="form-row">
+        <select id="task-priority-select" class="form-select">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+        <input type="date" id="task-due-date-input" class="form-select" />
+      </div>
+      <div class="form-row">
+        <div class="assignee-input-wrapper">
+          <div id="assignee-display" class="assignee-display" onclick="toggleAssigneeInput()">
+            <span id="assignee-text">Assign to...</span>
+            <span class="assignee-dropdown-icon">▼</span>
+          </div>
+          <input type="text" id="task-assignee-input" class="assignee-input" placeholder="Type name..." 
+            onkeydown="if(event.key==='Enter') confirmAssignee()" 
+            oninput="filterAssigneeList(this.value)" style="display:none" />
+          <div id="assignee-suggestions" class="assignee-suggestions" style="display:none"></div>
+        </div>
+        <input type="number" id="task-subtasks-count" class="form-select" placeholder="Subtasks (e.g. 5)" min="0" />
+      </div>
+      <div id="task-subtasks-container" style="display:none; margin-top: 10px;">
+        <label class="form-label" style="margin-bottom: 8px;">Subtasks</label>
+        <div id="subtasks-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+      <div class="modal-buttons">
+        <button
+  class="btn-primary"
+  id="task-submit-btn"
+  onclick="submitTask()">
+  Add Task
+</button>
+        <button class="btn-secondary" onclick="closeTaskModalFn()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TASK ACTIVITY LOG MODAL ===== -->
+<div class="modal-overlay" id="modal-task-info" style="display:none" onclick="closeTaskInfoModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">Task Details</div>
+    <div class="modal-form">
+      <div id="task-info-content" style="max-height: 500px; overflow-y: auto;"></div>
+      <div class="modal-buttons">
+        <button class="btn-secondary" onclick="closeTaskInfoModal()" style="flex: 1;">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="import-file" style="display:none" accept=".json" onchange="importBoards(event)" />
+
+<script src="script.js"></script>
+</body>
+</html>
