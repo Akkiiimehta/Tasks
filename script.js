@@ -404,8 +404,6 @@ let currentDueDate = '';
 let currentSubtasks = [];
 
 let assigneeDropdownOpen = false;
-// Guard: true while user is mousing down on a suggestion item
-let _assigneeMousedownInProgress = false;
 
 function toggleAssigneeInput() {
   const display = document.getElementById('assignee-display');
@@ -417,9 +415,14 @@ function toggleAssigneeInput() {
   display.style.display = 'none';
   input.style.display = 'block';
 
+  // Pre-fill with current assignee so user can see/edit it
   input.value = currentAssignee || '';
 
   filterAssigneeList(input.value);
+
+  // Prevent the suggestions container from stealing focus (causes blur on input)
+  // This is the key fix: pointerdown on the list calls preventDefault before blur fires
+  suggestions.onmousedown = (e) => e.preventDefault();
 
   requestAnimationFrame(() => {
     input.focus();
@@ -444,58 +447,34 @@ function filterAssigneeList(query) {
   const suggestions = document.getElementById('assignee-suggestions');
   const lowerQuery = query.toLowerCase().trim();
 
-  if (!lowerQuery) {
-    suggestions.innerHTML = '';
-    state.assignees.forEach((assignee) => {
-      const div = document.createElement('div');
-      div.className = 'assignee-suggestion-item';
-      div.textContent = assignee;
-      div.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        _assigneeMousedownInProgress = true;
-        selectAssignee(assignee);
-        _assigneeMousedownInProgress = false;
-      });
-      suggestions.appendChild(div);
-    });
-    suggestions.style.display = state.assignees.length > 0 ? 'block' : 'none';
-    return;
-  }
-
-  const filtered = state.assignees.filter((a) =>
-    a.toLowerCase().includes(lowerQuery)
-  );
-  const hasExact = assigneeExists(lowerQuery);
-
   suggestions.innerHTML = '';
 
-  filtered.forEach((assignee) => {
+  const list = lowerQuery
+    ? state.assignees.filter((a) => a.toLowerCase().includes(lowerQuery))
+    : state.assignees.slice();
+
+  list.forEach((assignee) => {
     const div = document.createElement('div');
     div.className = 'assignee-suggestion-item';
     div.textContent = assignee;
-    div.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      _assigneeMousedownInProgress = true;
+    div.addEventListener('click', () => {
       selectAssignee(assignee);
-      _assigneeMousedownInProgress = false;
     });
     suggestions.appendChild(div);
   });
 
-  if (!hasExact && lowerQuery.length > 0) {
+  const hasExact = assigneeExists(lowerQuery);
+  if (lowerQuery && !hasExact) {
     const newDiv = document.createElement('div');
     newDiv.className = 'assignee-suggestion-item new-item';
     newDiv.textContent = `+ Add "${query}"`;
-    newDiv.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      _assigneeMousedownInProgress = true;
+    newDiv.addEventListener('click', () => {
       addNewAssigneeAndSelect(query);
-      _assigneeMousedownInProgress = false;
     });
     suggestions.appendChild(newDiv);
   }
 
-  suggestions.style.display = 'block';
+  suggestions.style.display = suggestions.children.length > 0 ? 'block' : 'none';
 }
 
 function selectAssignee(name) {
@@ -511,9 +490,6 @@ function selectAssignee(name) {
 }
 
 function confirmAssignee() {
-  // If a suggestion was just selected via mousedown, state is already set — bail
-  if (_assigneeMousedownInProgress) return;
-
   const input = document.getElementById('task-assignee-input');
   if (!input || input.style.display === 'none') return;
 
@@ -527,14 +503,12 @@ function confirmAssignee() {
     return;
   }
 
-  // FIX #2: case-insensitive match — use canonical name if it exists
   const canonical = getCanonicalAssignee(value);
   if (canonical) {
     selectAssignee(canonical);
     return;
   }
 
-  // New name — normalize casing before adding
   addNewAssigneeAndSelect(value);
 }
 
@@ -1188,17 +1162,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Assignee input: confirm on blur only when NOT selecting via mouse
+  // Assignee input blur: only fires when clicking truly outside (suggestions prevent it via onmousedown)
   const assigneeInput = document.getElementById('task-assignee-input');
   if (assigneeInput) {
-    assigneeInput.addEventListener('blur', function () {
-      // Small delay so mousedown on a suggestion item fires first
-      setTimeout(() => {
-        if (!_assigneeMousedownInProgress) {
-          confirmAssignee();
-        }
-      }, 150);
-    });
+    assigneeInput.addEventListener('blur', confirmAssignee);
   }
 });
 
@@ -1264,14 +1231,9 @@ function exportBoards() {
    })();
 document.addEventListener('mousedown', (e) => {
   const wrapper = document.querySelector('.assignee-input-wrapper');
-
   if (!wrapper) return;
-
   if (!wrapper.contains(e.target)) {
-    // Only close if we're not in the middle of selecting a suggestion
-    if (!_assigneeMousedownInProgress) {
-      closeAssigneeDropdown();
-    }
+    closeAssigneeDropdown();
   }
 });
 document.addEventListener('click', (e) => {
