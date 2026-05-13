@@ -540,23 +540,91 @@ function addNewAssigneeAndSelect(name) {
 }
 
 function updateNavbarAssigneeFilter() {
-  const filterSelect = document.getElementById('navbar-assignee-filter');
-  if (!filterSelect) return;
+  const input = document.getElementById('navbar-assignee-input');
 
-  const currentValue = filterSelect.value;
-  filterSelect.innerHTML = '<option value="all">Assigned</option>';
-  state.assignees.forEach((assignee) => {
-    const opt = document.createElement('option');
-    opt.value = assignee;
-    opt.textContent = assignee;
-    filterSelect.appendChild(opt);
-  });
+  if (!input) return;
 
-  if (currentValue && (currentValue === 'all' || state.assignees.includes(currentValue))) {
-    filterSelect.value = currentValue;
+  if (
+    state.assigneeFilter &&
+    state.assigneeFilter !== 'all'
+  ) {
+    input.value = state.assigneeFilter;
+  } else {
+    input.value = '';
   }
 }
+function removeNavbarAssignee(name) {
+  if (state.currentUser?.role !== 'admin') return;
 
+  const confirmed = confirm(`Remove ${name}?`);
+
+  if (!confirmed) return;
+
+  state.assignees = state.assignees.filter(
+    (a) => a !== name
+  );
+
+  saveAssignees();
+
+  if (state.assigneeFilter === name) {
+    state.assigneeFilter = 'all';
+
+    const input = document.getElementById('navbar-assignee-input');
+
+    if (input) input.value = '';
+  }
+
+  filterNavbarAssignees(
+    document.getElementById('navbar-assignee-input')?.value || ''
+  );
+
+  renderDashboard();
+}
+function filterNavbarAssignees(query) {
+  const suggestions = document.getElementById('navbar-assignee-suggestions');
+  if (!suggestions) return;
+
+  const lower = query.toLowerCase().trim();
+
+  const filtered = state.assignees.filter((a) =>
+    a.toLowerCase().includes(lower)
+  );
+
+  suggestions.innerHTML = '';
+
+  filtered.forEach((assignee) => {
+    const item = document.createElement('div');
+    item.className = 'navbar-assignee-item';
+
+    const isAdmin = state.currentUser?.role === 'admin';
+
+    item.innerHTML = `
+      <span>${assignee}</span>
+
+      ${
+        isAdmin
+          ? `<button
+              class="navbar-assignee-remove"
+              onclick="event.stopPropagation(); removeNavbarAssignee('${assignee}')">
+              ×
+            </button>`
+          : ''
+      }
+    `;
+
+    item.addEventListener('click', () => {
+      setAssigneeFilter(assignee);
+
+      document.getElementById('navbar-assignee-input').value = assignee;
+
+      suggestions.style.display = 'none';
+    });
+
+    suggestions.appendChild(item);
+  });
+
+  suggestions.style.display = filtered.length ? 'block' : 'none';
+}
 // ── Subtask handling ────────────────────────────────────
 // FIX #4: attach oninput event properly and trigger instantly
 function handleSubtaskCountChange(value) {
@@ -1184,5 +1252,15 @@ document.addEventListener('click', (e) => {
       display.style.display = 'flex';
       input.style.display = 'none';
     }
+  }
+});
+document.addEventListener('click', (e) => {
+  const wrapper = document.querySelector('.navbar-assignee-search');
+  const suggestions = document.getElementById('navbar-assignee-suggestions');
+
+  if (!wrapper || !suggestions) return;
+
+  if (!wrapper.contains(e.target)) {
+    suggestions.style.display = 'none';
   }
 });
