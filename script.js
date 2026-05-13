@@ -402,7 +402,6 @@ function moveTask(taskId, fromStatus) {
 let currentAssignee = '';
 let currentDueDate = '';
 let currentSubtasks = [];
-let _assigneeSelecting = false; // guard: block blur handler during mousedown selection
 
 function toggleAssigneeInput() {
   const display = document.getElementById('assignee-display');
@@ -427,7 +426,6 @@ function filterAssigneeList(query) {
       // FIX #1: use mousedown so it fires before blur
       div.addEventListener('mousedown', (e) => {
         e.preventDefault();
-        _assigneeSelecting = true;
         selectAssignee(assignee);
       });
       suggestions.appendChild(div);
@@ -451,7 +449,6 @@ function filterAssigneeList(query) {
     // FIX #1: use mousedown so it fires before blur
     div.addEventListener('mousedown', (e) => {
       e.preventDefault();
-      _assigneeSelecting = true;
       selectAssignee(assignee);
     });
     suggestions.appendChild(div);
@@ -464,7 +461,6 @@ function filterAssigneeList(query) {
     // FIX #1: use mousedown so it fires before blur
     newDiv.addEventListener('mousedown', (e) => {
       e.preventDefault();
-      _assigneeSelecting = true;
       addNewAssigneeAndSelect(query);
     });
     suggestions.appendChild(newDiv);
@@ -475,18 +471,20 @@ function filterAssigneeList(query) {
 
 function selectAssignee(name) {
   currentAssignee = name;
+
   const display = document.getElementById('assignee-display');
   const input = document.getElementById('task-assignee-input');
   const text = document.getElementById('assignee-text');
   const suggestions = document.getElementById('assignee-suggestions');
 
   text.textContent = name;
-  display.style.display = 'flex';
-  input.style.display = 'none';
+
   suggestions.style.display = 'none';
-  input.value = '';
-  // Reset guard after a tick so confirmAssignee's blur fires after this clears
-  setTimeout(() => { _assigneeSelecting = false; }, 0);
+
+  input.style.display = 'none';
+  display.style.display = 'flex';
+
+  input.blur();
 }
 
 function confirmAssignee() {
