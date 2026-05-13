@@ -404,6 +404,8 @@ let currentDueDate = '';
 let currentSubtasks = [];
 
 let assigneeDropdownOpen = false;
+// Guard: true while user is mousing down on a suggestion item
+let _assigneeMousedownInProgress = false;
 
 function toggleAssigneeInput() {
   const display = document.getElementById('assignee-display');
@@ -448,10 +450,11 @@ function filterAssigneeList(query) {
       const div = document.createElement('div');
       div.className = 'assignee-suggestion-item';
       div.textContent = assignee;
-      // FIX #1: use mousedown so it fires before blur
       div.addEventListener('mousedown', (e) => {
         e.preventDefault();
+        _assigneeMousedownInProgress = true;
         selectAssignee(assignee);
+        _assigneeMousedownInProgress = false;
       });
       suggestions.appendChild(div);
     });
@@ -462,7 +465,6 @@ function filterAssigneeList(query) {
   const filtered = state.assignees.filter((a) =>
     a.toLowerCase().includes(lowerQuery)
   );
-  // FIX #2: case-insensitive exact match check
   const hasExact = assigneeExists(lowerQuery);
 
   suggestions.innerHTML = '';
@@ -471,10 +473,11 @@ function filterAssigneeList(query) {
     const div = document.createElement('div');
     div.className = 'assignee-suggestion-item';
     div.textContent = assignee;
-    // FIX #1: use mousedown so it fires before blur
     div.addEventListener('mousedown', (e) => {
       e.preventDefault();
+      _assigneeMousedownInProgress = true;
       selectAssignee(assignee);
+      _assigneeMousedownInProgress = false;
     });
     suggestions.appendChild(div);
   });
@@ -483,10 +486,11 @@ function filterAssigneeList(query) {
     const newDiv = document.createElement('div');
     newDiv.className = 'assignee-suggestion-item new-item';
     newDiv.textContent = `+ Add "${query}"`;
-    // FIX #1: use mousedown so it fires before blur
     newDiv.addEventListener('mousedown', (e) => {
       e.preventDefault();
+      _assigneeMousedownInProgress = true;
       addNewAssigneeAndSelect(query);
+      _assigneeMousedownInProgress = false;
     });
     suggestions.appendChild(newDiv);
   }
@@ -498,28 +502,30 @@ function selectAssignee(name) {
   currentAssignee = name;
 
   const text = document.getElementById('assignee-text');
+  if (text) text.textContent = name;
 
-  text.textContent = name;
+  const input = document.getElementById('task-assignee-input');
+  if (input) input.value = '';
 
   closeAssigneeDropdown();
 }
 
 function confirmAssignee() {
-  // Guard: if a suggestion was just clicked via mousedown, skip blur handling
-
+  // If a suggestion was just selected via mousedown, state is already set — bail
+  if (_assigneeMousedownInProgress) return;
 
   const input = document.getElementById('task-assignee-input');
-  const value = input.value.trim();
-  const display = document.getElementById('assignee-display');
-  const suggestions = document.getElementById('assignee-suggestions');
-if (!value) {
-  if (!currentAssignee) {
-    document.getElementById('assignee-text').textContent = 'Assign to...';
-  }
+  if (!input || input.style.display === 'none') return;
 
-  closeAssigneeDropdown();
-  return;
-}
+  const value = input.value.trim();
+
+  if (!value) {
+    if (!currentAssignee) {
+      document.getElementById('assignee-text').textContent = 'Assign to...';
+    }
+    closeAssigneeDropdown();
+    return;
+  }
 
   // FIX #2: case-insensitive match — use canonical name if it exists
   const canonical = getCanonicalAssignee(value);
@@ -1182,10 +1188,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // FIX: Add blur listener to assignee input (once, at init)
+  // Assignee input: confirm on blur only when NOT selecting via mouse
   const assigneeInput = document.getElementById('task-assignee-input');
   if (assigneeInput) {
-    assigneeInput.addEventListener('blur', confirmAssignee);
+    assigneeInput.addEventListener('blur', function () {
+      // Small delay so mousedown on a suggestion item fires first
+      setTimeout(() => {
+        if (!_assigneeMousedownInProgress) {
+          confirmAssignee();
+        }
+      }, 150);
+    });
   }
 });
 
@@ -1255,7 +1268,10 @@ document.addEventListener('mousedown', (e) => {
   if (!wrapper) return;
 
   if (!wrapper.contains(e.target)) {
-    closeAssigneeDropdown();
+    // Only close if we're not in the middle of selecting a suggestion
+    if (!_assigneeMousedownInProgress) {
+      closeAssigneeDropdown();
+    }
   }
 });
 document.addEventListener('click', (e) => {
