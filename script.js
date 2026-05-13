@@ -403,14 +403,39 @@ let currentAssignee = '';
 let currentDueDate = '';
 let currentSubtasks = [];
 
+let assigneeDropdownOpen = false;
+
 function toggleAssigneeInput() {
   const display = document.getElementById('assignee-display');
   const input = document.getElementById('task-assignee-input');
+  const suggestions = document.getElementById('assignee-suggestions');
+
+  assigneeDropdownOpen = true;
+
   display.style.display = 'none';
   input.style.display = 'block';
-  input.value = currentAssignee;
-  input.focus();
-  filterAssigneeList('');
+
+  input.value = currentAssignee || '';
+
+  filterAssigneeList(input.value);
+
+  requestAnimationFrame(() => {
+    input.focus();
+  });
+
+  suggestions.style.display = 'block';
+}
+
+function closeAssigneeDropdown() {
+  const display = document.getElementById('assignee-display');
+  const input = document.getElementById('task-assignee-input');
+  const suggestions = document.getElementById('assignee-suggestions');
+
+  assigneeDropdownOpen = false;
+
+  input.style.display = 'none';
+  suggestions.style.display = 'none';
+  display.style.display = 'flex';
 }
 
 function filterAssigneeList(query) {
@@ -472,19 +497,11 @@ function filterAssigneeList(query) {
 function selectAssignee(name) {
   currentAssignee = name;
 
-  const display = document.getElementById('assignee-display');
-  const input = document.getElementById('task-assignee-input');
   const text = document.getElementById('assignee-text');
-  const suggestions = document.getElementById('assignee-suggestions');
 
   text.textContent = name;
 
-  suggestions.style.display = 'none';
-
-  input.style.display = 'none';
-  display.style.display = 'flex';
-
-  input.blur();
+  closeAssigneeDropdown();
 }
 
 function confirmAssignee() {
