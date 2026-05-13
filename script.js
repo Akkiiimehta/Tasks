@@ -491,7 +491,7 @@ function selectAssignee(name) {
 
 function confirmAssignee() {
   // Guard: if a suggestion was just clicked via mousedown, skip blur handling
-  if (_assigneeSelecting) return;
+
 
   const input = document.getElementById('task-assignee-input');
   const value = input.value.trim();
@@ -1166,4 +1166,19 @@ function exportBoards() {
     updateNavbarAssigneeFilter();
     renderDashboard();
   }
-})();
+   })();
+document.addEventListener('click', (e) => {
+  const wrapper = document.querySelector('.assignee-input-wrapper');
+  const suggestions = document.getElementById('assignee-suggestions');
+  const input = document.getElementById('task-assignee-input');
+  const display = document.getElementById('assignee-display');
+
+  if (!wrapper || !wrapper.contains(e.target)) {
+    suggestions.style.display = 'none';
+
+    if (!currentAssignee) {
+      display.style.display = 'flex';
+      input.style.display = 'none';
+    }
+  }
+});
