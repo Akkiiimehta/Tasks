@@ -576,6 +576,16 @@ function filterNavbarAssignees(query) {
 
   const lower = query.toLowerCase().trim();
 
+  // If input is cleared, reset filter back to all and re-render
+  if (!lower) {
+    if (state.assigneeFilter !== 'all') {
+      state.assigneeFilter = 'all';
+      renderDashboard();
+    }
+    suggestions.style.display = 'none';
+    return;
+  }
+
   const filtered = state.assignees.filter((a) =>
     a.toLowerCase().includes(lower)
   );
