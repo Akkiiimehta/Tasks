@@ -513,18 +513,11 @@ function confirmAssignee() {
   const display = document.getElementById('assignee-display');
   const suggestions = document.getElementById('assignee-suggestions');
 if (!value) {
-  if (currentAssignee) {
-    display.style.display = 'flex';
-    input.style.display = 'none';
-    suggestions.style.display = 'none';
-    return;
+  if (!currentAssignee) {
+    document.getElementById('assignee-text').textContent = 'Assign to...';
   }
 
-  currentAssignee = '';
-  document.getElementById('assignee-text').textContent = 'Assign to...';
-  display.style.display = 'flex';
-  input.style.display = 'none';
-  suggestions.style.display = 'none';
+  closeAssigneeDropdown();
   return;
 }
 
@@ -1256,19 +1249,13 @@ function exportBoards() {
     renderDashboard();
   }
    })();
-document.addEventListener('click', (e) => {
+document.addEventListener('mousedown', (e) => {
   const wrapper = document.querySelector('.assignee-input-wrapper');
-  const suggestions = document.getElementById('assignee-suggestions');
-  const input = document.getElementById('task-assignee-input');
-  const display = document.getElementById('assignee-display');
 
-  if (!wrapper || !wrapper.contains(e.target)) {
-    suggestions.style.display = 'none';
+  if (!wrapper) return;
 
-    if (!currentAssignee) {
-      display.style.display = 'flex';
-      input.style.display = 'none';
-    }
+  if (!wrapper.contains(e.target)) {
+    closeAssigneeDropdown();
   }
 });
 document.addEventListener('click', (e) => {
