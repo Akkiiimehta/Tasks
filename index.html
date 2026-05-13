@@ -71,14 +71,23 @@
 
     </select>
 
-    <select
-      class="filter-select navbar-control"
-      id="navbar-assignee-filter"
-      onchange="setAssigneeFilter(this.value)">
+   <div class="navbar-assignee-search navbar-control">
 
-      <option value="all">Assigned</option>
+  <input
+    type="text"
+    id="navbar-assignee-input"
+    class="filter-select"
+    placeholder="Assigned"
+    oninput="filterNavbarAssignees(this.value)"
+    autocomplete="off" />
 
-    </select>
+  <div
+    id="navbar-assignee-suggestions"
+    class="navbar-assignee-suggestions"
+    style="display:none">
+  </div>
+
+</div>
 
     <button class="search-btn navbar-control" onclick="toggleTheme()" title="Toggle Theme">
       🌙
