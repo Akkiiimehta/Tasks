@@ -455,7 +455,26 @@ body.light-mode .task-desc { color: #475569; }
 body.light-mode .due-date-badge { background: rgba(59,130,246,0.12); color: #1d4ed8; }
 body.light-mode .due-date-badge.overdue { background: rgba(239,68,68,0.12); color: #b91c1c; }
 body.light-mode .due-date-badge.due-soon { background: rgba(251,146,60,0.15); color: #c2410c; }
+.task-subtasks-preview {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
+.task-subtask-item {
+  font-size: 11px;
+  color: #cbd5e1;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  line-height: 1.4;
+}
+
+body.light-mode .task-subtask-item {
+  color: #334155;
+  background: rgba(15,23,42,0.05);
+}
 .subtasks-badge {
   padding: 2px 6px;
   border-radius: 3px;
