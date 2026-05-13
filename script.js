@@ -868,11 +868,27 @@ function renderTaskCard(task, status) {
          ondragstart="onDragStart(event, ${task.id}, '${status}')"
          ondragend="onDragEnd(event)">
       <div class="task-title">${escHtml(task.title)}</div>
-      ${
-        task.description
-          ? `<div class="task-desc">${escHtml(task.description)}</div>`
-          : ''
-      }
+    ${
+  task.description
+    ? `<div class="task-desc">${escHtml(task.description)}</div>`
+    : ''
+}
+
+${
+  task.subtasks?.length
+    ? `
+    <div class="task-subtasks-preview">
+      ${task.subtasks
+        .map(
+          (s) => `
+          <div class="task-subtask-item">
+            • ${escHtml(s)}
+          </div>`
+        )
+        .join('')}
+    </div>`
+    : ''
+}
       <div class="task-footer">
         <div class="task-meta">
           <span class="priority-badge priority-${task.priority}">${escHtml(
