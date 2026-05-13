@@ -886,7 +886,51 @@ body.light-mode .empty-state { color: #94a3b8; }
 .navbar-control {
   min-height: 38px;
 }
+.navbar-assignee-search {
+  position: relative;
+}
 
+.navbar-assignee-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 220px;
+  background: rgba(30, 41, 59, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 9999;
+  backdrop-filter: blur(12px);
+}
+
+.navbar-assignee-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-size: 13px;
+  color: #f1f5f9;
+}
+
+.navbar-assignee-item:hover {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.navbar-assignee-remove {
+  opacity: 0;
+  border: none;
+  background: transparent;
+  color: #fca5a5;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.15s ease;
+}
+
+.navbar-assignee-item:hover .navbar-assignee-remove {
+  opacity: 1;
+}
 .filter-select {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
