@@ -982,13 +982,68 @@ body.light-mode .empty-state { color: #94a3b8; }
 @media (max-width: 600px) {
   .auth-card { padding: 28px 20px; }
   .auth-title { font-size: 26px; }
-  .navbar { padding: 12px 16px; }
-  .navbar-title { font-size: 17px; }
+
+  /* Navbar: stack title + actions on two rows */
+  .navbar {
+    padding: 10px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .navbar-title { font-size: 17px; flex: 1; }
+
+  /* Filters row: scrollable single line, no wrap */
+  .navbar-filters {
+    order: 3;
+    width: 100%;
+    gap: 6px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Shrink filter controls on mobile */
+  .filter-select {
+    font-size: 12px;
+    padding: 8px 8px;
+    min-width: 80px;
+    max-width: 110px;
+  }
+
+  /* Assignee search input in navbar */
+  #navbar-assignee-input {
+    max-width: 100px;
+    min-width: 80px;
+    font-size: 12px;
+    padding: 8px 8px;
+  }
+
+  /* Search box when expanded */
+  .search-box.active { width: 120px; }
+  .search-box input { font-size: 12px; }
+
+  /* User area: keep compact, hide badge */
+  .navbar-user {
+    gap: 6px;
+    margin-left: auto;
+  }
   .user-badge { display: none; }
-  .container { padding: 10px 12px 48px; }
+  .navbar-btn {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+  .search-btn { height: 34px; width: 34px; }
+
+  /* Board & content */
+  .container { padding: 10px 10px 48px; }
   .kanban-grid { grid-template-columns: 1fr; }
-  .board-title { font-size: 20px; }
+  .board-title { font-size: 18px; }
   .form-row { grid-template-columns: 1fr; }
+
+  /* Modal fits screen */
+  .modal { padding: 18px 14px; }
+  .modal-header { font-size: 17px; }
 }
 
 @media (max-width: 900px) {
